@@ -1,18 +1,27 @@
-# utils/job_parser.py
-import openai
+from openai import OpenAI
+import streamlit as st
 
-openai.api_key = "w9oJykDtAL6EcJXIBzoOt274Ng1pnITUfBJq3DtUMGEDrS51w7kKLA3WwNHMLYuFwHFSGFf6SHT3BlbkFJ7Ef_Rs9UNh-MI-L3-uVJtg4MrWviV4F0rmRk08oGVgEVh73xMAb9xI7ZUzWfUj8iFg_7PyF6gA"  # Replace this with your API key
-
+# Initialize OpenAI client using the Streamlit secrets config
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 def extract_keywords_from_jd(jd_text):
-    prompt = f"""
-    Extract the key skills, tools, and technologies required from the following job description:
-    ---
-    {jd_text}
-    ---
-    Return them as a comma-separated list.
     """
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[{"role": "user", "content": prompt}]
+    Uses GPT to extract key skills or keywords from a job description.
+    """
+    prompt = f"""
+    Extract the key technical and soft skills from the following job description.
+
+    Job Description:
+    {jd_text}
+
+    Format the output as a comma-separated list.
+    """
+
+    # Make the API call using new method
+    response = client.chat.completions.create(
+        model="gpt-4",  # or "gpt-3.5-turbo"
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.3
     )
-    return [kw.strip() for kw in response['choices'][0]['message']['content'].split(',')]
+
+    # Return the content (a comma-separated list of keywords)
+    return response.choices[0].message.content.strip()
